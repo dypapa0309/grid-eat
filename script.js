@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     createGrid(grid);
-    loadSavedLogos();
+    initializeLogoListener();
 
     function createGrid(grid) {
         for (let i = 0; i < 1000; i++) {
@@ -41,27 +41,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function loadSavedLogos() {
-        database.ref('logos').once('value')
-        .then((snapshot) => {
-            snapshot.forEach((childSnapshot) => {
-                const index = childSnapshot.key;
-                const logoData = childSnapshot.val();
-                const cell = document.querySelector(`.grid-item[data-index="${index}"]`);
-                if (cell && logoData) {
-                    const img = new Image();
-                    img.src = logoData;
-                    img.style.width = '100%';
-                    img.style.height = '100%';
-                    img.style.objectFit = 'cover';
-                    cell.innerHTML = '';
-                    cell.appendChild(img);
-                }
-            });
-        })
-        .catch((error) => {
-            console.error('로고 불러오기 실패:', error);
+    function initializeLogoListener() {
+        database.ref('logos').on('value', (snapshot) => {
+            if (snapshot.exists()) {
+                snapshot.forEach((childSnapshot) => {
+                    const index = childSnapshot.key;
+                    const logoData = childSnapshot.val();
+                    updateGridCell(index, logoData);
+                });
+            } else {
+                console.log('저장된 로고가 없습니다.');
+            }
+        }, (error) => {
+            console.error('로고 데이터 읽기 오류:', error);
         });
+    }
+
+    function updateGridCell(index, logoData) {
+        const cell = document.querySelector(`.grid-item[data-index="${index}"]`);
+        if (cell && logoData) {
+            const img = new Image();
+            img.src = logoData;
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
+            cell.innerHTML = '';
+            cell.appendChild(img);
+        }
     }
 
     function startMemoryGame(cell) {
@@ -186,6 +192,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function saveLogo(cell, logoData) {
         return database.ref('logos/' + cell.dataset.index).set(logoData)
+        .then(() => {
+            console.log('로고가 성공적으로 저장되었습니다.');
+        })
         .catch((error) => {
             console.error('로고 저장 실패:', error);
             throw error;
@@ -205,8 +214,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 reader.onload = function(e) {
                     const img = new Image();
                     img.onload = function() {
-                        cell.innerHTML = '';
-                        cell.appendChild(img);
                         saveLogo(cell, e.target.result).then(() => {
                             resolve();
                         }).catch((error) => {
@@ -217,9 +224,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         reject(new Error('Failed to load image'));
                     };
                     img.src = e.target.result;
-                    img.style.width = '100%';
-                    img.style.height = '100%';
-                    img.style.objectFit = 'cover';
                 };
                 reader.onerror = function() {
                     reject(new Error('Failed to read file'));

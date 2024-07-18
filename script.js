@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const grid = document.getElementById('grid');
+    createGrid(grid);
     const gameArea = document.getElementById('gameArea');
     const cardsContainer = document.getElementById('cardsContainer');
     const timerElement = document.getElementById('timer');

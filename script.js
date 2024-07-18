@@ -5,6 +5,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const timerElement = document.getElementById('timer');
     const logoInput = document.getElementById('logoInput');
     
+    // Firebase 초기화
+    const database = firebase.database();
+
     const state = {
         firstCard: null,
         secondCard: null,
@@ -15,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     createGrid(grid);
+    loadSavedLogos();
 
     function createGrid(grid) {
         for (let i = 0; i < 1000; i++) {
@@ -26,6 +30,25 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             grid.appendChild(cell);
         }
+    }
+
+    function loadSavedLogos() {
+        database.ref('logos').once('value', (snapshot) => {
+            snapshot.forEach((childSnapshot) => {
+                const index = childSnapshot.key;
+                const logoData = childSnapshot.val();
+                const cell = document.querySelector(`.grid-item[data-index="${index}"]`);
+                if (cell && logoData) {
+                    const img = new Image();
+                    img.src = logoData;
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.objectFit = 'cover';
+                    cell.innerHTML = '';
+                    cell.appendChild(img);
+                }
+            });
+        });
     }
 
     function startMemoryGame(cell) {
@@ -60,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function cardClickHandler(card) {
-        if (!state.canClick || card.classList.contains('revealed') || card === state.firstCard) {
+        if (!state.canClick || card.classList.contains('revealed') || card === state.firstCard || card === state.secondCard) {
             return;
         }
 
@@ -68,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!state.firstCard) {
             state.firstCard = card;
-        } else {
+        } else if (!state.secondCard) {
             state.canClick = false;
             state.secondCard = card;
 
@@ -148,6 +171,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function saveLogo(cell, logoData) {
+        return database.ref('logos/' + cell.dataset.index).set(logoData);
+    }
+
     function openLogoUploader(cell) {
         return new Promise((resolve, reject) => {
             logoInput.value = '';
@@ -163,7 +190,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     img.onload = function() {
                         cell.innerHTML = '';
                         cell.appendChild(img);
-                        resolve();
+                        saveLogo(cell, e.target.result).then(() => {
+                            resolve();
+                        }).catch((error) => {
+                            reject(new Error('Failed to save logo'));
+                        });
                     };
                     img.onerror = function() {
                         reject(new Error('Failed to load image'));

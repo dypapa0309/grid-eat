@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     const grid = document.getElementById('grid');
-    createGrid(grid);
     const gameArea = document.getElementById('gameArea');
     const cardsContainer = document.getElementById('cardsContainer');
     const timerElement = document.getElementById('timer');
+    const logoInput = document.getElementById('logoInput');
     
     const state = {
         firstCard: null,
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function cardClickHandler(card) {
-        if (!state.canClick || card.classList.contains('revealed') || card === state.firstCard || card === state.secondCard) {
+        if (!state.canClick || card.classList.contains('revealed') || card === state.firstCard) {
             return;
         }
 
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!state.firstCard) {
             state.firstCard = card;
-        } else if (!state.secondCard) {
+        } else {
             state.canClick = false;
             state.secondCard = card;
 
@@ -150,7 +150,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openLogoUploader(cell) {
         return new Promise((resolve, reject) => {
-            const logoInput = document.getElementById('logoInput');
             logoInput.value = '';
             logoInput.onchange = function(event) {
                 const file = event.target.files[0];

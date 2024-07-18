@@ -8,15 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Firebase 초기화
     const database = firebase.database();
 
-    // Firebase 연결 상태 확인
-    firebase.database().ref('.info/connected').on('value', function(snap) {
-        if (snap.val() === true) {
-            console.log('Firebase에 연결되었습니다.');
-        } else {
-            console.log('Firebase 연결이 끊어졌습니다.');
-        }
-    });
-
     const state = {
         firstCard: null,
         secondCard: null,
@@ -42,7 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function initializeLogoListener() {
-        database.ref('logos').on('value', (snapshot) => {
+        const logosRef = database.ref('logos');
+        logosRef.on('value', (snapshot) => {
             if (snapshot.exists()) {
                 snapshot.forEach((childSnapshot) => {
                     const index = childSnapshot.key;
@@ -60,13 +52,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateGridCell(index, logoData) {
         const cell = document.querySelector(`.grid-item[data-index="${index}"]`);
         if (cell && logoData) {
+            cell.innerHTML = ''; // 기존 내용 제거
             const img = new Image();
             img.src = logoData;
             img.style.width = '100%';
             img.style.height = '100%';
             img.style.objectFit = 'cover';
-            cell.innerHTML = '';
             cell.appendChild(img);
+            console.log(`Grid cell ${index} updated with new logo`);
+        } else {
+            console.log(`Failed to update grid cell ${index}. Cell: ${cell}, Logo data: ${logoData ? 'exists' : 'missing'}`);
         }
     }
 
@@ -214,18 +209,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 reader.onload = function(e) {
                     const img = new Image();
                     img.onload = function() {
-                        saveLogo(cell, e.target.result).then(() => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = 20;
+                        canvas.height = 20;
+                        ctx.drawImage(img, 0, 0, 20, 20);
+                        const resizedImageData = canvas.toDataURL('image/jpeg');
+                        
+                        updateGridCell(cell.dataset.index, resizedImageData); // 즉시 그리드 셀 업데이트
+                        
+                        saveLogo(cell, resizedImageData).then(() => {
+                            console.log('Logo saved to Firebase');
                             resolve();
                         }).catch((error) => {
+                            console.error('Failed to save logo to Firebase:', error);
                             reject(new Error('Failed to save logo'));
                         });
                     };
                     img.onerror = function() {
+                        console.error('Failed to load image');
                         reject(new Error('Failed to load image'));
                     };
                     img.src = e.target.result;
                 };
                 reader.onerror = function() {
+                    console.error('Failed to read file');
                     reject(new Error('Failed to read file'));
                 };
                 reader.readAsDataURL(file);

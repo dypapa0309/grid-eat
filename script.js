@@ -8,6 +8,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Firebase 초기화
     const database = firebase.database();
 
+    // Firebase 연결 상태 확인
+    firebase.database().ref('.info/connected').on('value', function(snap) {
+        if (snap.val() === true) {
+            console.log('Firebase에 연결되었습니다.');
+        } else {
+            console.log('Firebase 연결이 끊어졌습니다.');
+        }
+    });
+
     const state = {
         firstCard: null,
         secondCard: null,
@@ -33,7 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadSavedLogos() {
-        database.ref('logos').once('value', (snapshot) => {
+        database.ref('logos').once('value')
+        .then((snapshot) => {
             snapshot.forEach((childSnapshot) => {
                 const index = childSnapshot.key;
                 const logoData = childSnapshot.val();
@@ -48,6 +58,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     cell.appendChild(img);
                 }
             });
+        })
+        .catch((error) => {
+            console.error('로고 불러오기 실패:', error);
         });
     }
 
@@ -172,7 +185,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveLogo(cell, logoData) {
-        return database.ref('logos/' + cell.dataset.index).set(logoData);
+        return database.ref('logos/' + cell.dataset.index).set(logoData)
+        .catch((error) => {
+            console.error('로고 저장 실패:', error);
+            throw error;
+        });
     }
 
     function openLogoUploader(cell) {

@@ -49,20 +49,74 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function updateGridCell(index, logoData) {
-        const cell = document.querySelector(`.grid-item[data-index="${index}"]`);
-        if (cell && logoData) {
-            cell.innerHTML = ''; // 기존 내용 제거
-            const img = new Image();
-            img.src = logoData;
+function updateGridCell(index, logoData) {
+    const cell = document.querySelector(`.grid-item[data-index="${index}"]`);
+    if (cell && logoData) {
+        cell.innerHTML = ''; // 기존 내용 제거
+        const img = new Image();
+        img.src = logoData;
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        cell.appendChild(img);
+        
+        // 터치 이벤트 리스너 추가
+        let touchStartTime;
+        cell.addEventListener('touchstart', (e) => {
+            touchStartTime = new Date().getTime();
+        });
+        
+        cell.addEventListener('touchend', (e) => {
+            const touchEndTime = new Date().getTime();
+            const touchDuration = touchEndTime - touchStartTime;
+            
+            if (touchDuration > 500) { // 0.5초 이상 터치했을 때
+                e.preventDefault();
+                showExpandedImage(logoData);
+            }
+        });
+        
+        // 마우스 이벤트 리스너 추가
+        cell.addEventListener('mouseenter', () => {
+            cell.style.zIndex = '2';
+            img.style.position = 'absolute';
+            img.style.width = '500%';
+            img.style.height = '500%';
+            img.style.top = '-200%';
+            img.style.left = '-200%';
+            img.style.zIndex = '3';
+        });
+        
+        cell.addEventListener('mouseleave', () => {
+            cell.style.zIndex = '1';
+            img.style.position = '';
             img.style.width = '100%';
             img.style.height = '100%';
-            img.style.objectFit = 'cover';
-            cell.appendChild(img);
-            console.log(`Grid cell ${index} updated with new logo`);
-        } else {
-            console.log(`Failed to update grid cell ${index}. Cell: ${cell}, Logo data: ${logoData ? 'exists' : 'missing'}`);
-        }
+            img.style.top = '';
+            img.style.left = '';
+            img.style.zIndex = '';
+        });
+        
+        console.log(`Grid cell ${index} updated with new logo`);
+    } else {
+        console.log(`Failed to update grid cell ${index}. Cell: ${cell}, Logo data: ${logoData ? 'exists' : 'missing'}`);
+    }
+}
+
+    function showExpandedImage(logoData) {
+        const overlay = document.createElement('div');
+        overlay.className = 'expanded-overlay';
+        
+        const img = new Image();
+        img.src = logoData;
+        img.className = 'expanded-image';
+        
+        overlay.appendChild(img);
+        document.body.appendChild(overlay);
+        
+        overlay.addEventListener('click', () => {
+            document.body.removeChild(overlay);
+        });
     }
 
     function startMemoryGame(cell) {

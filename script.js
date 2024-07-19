@@ -34,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 그리드 크기에 따른 레이아웃 조정 함수 추가
     function adjustGridLayout() {
         const gridContainer = document.getElementById('gridContainer');
         const grid = document.getElementById('grid');
@@ -48,7 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 이벤트 리스너 추가
     window.addEventListener('load', adjustGridLayout);
     window.addEventListener('resize', adjustGridLayout);
 
@@ -80,7 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
             img.style.objectFit = 'cover';
             cell.appendChild(img);
             
-            // 터치 이벤트 리스너 추가
             let touchStartTime;
             cell.addEventListener('touchstart', (e) => {
                 touchStartTime = new Date().getTime();
@@ -94,27 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     e.preventDefault();
                     showExpandedImage(logoData);
                 }
-            });
-            
-            // 마우스 이벤트 리스너 추가
-            cell.addEventListener('mouseenter', () => {
-                cell.style.zIndex = '2';
-                img.style.position = 'absolute';
-                img.style.width = '500%';
-                img.style.height = '500%';
-                img.style.top = '-200%';
-                img.style.left = '-200%';
-                img.style.zIndex = '3';
-            });
-            
-            cell.addEventListener('mouseleave', () => {
-                cell.style.zIndex = '1';
-                img.style.position = '';
-                img.style.width = '100%';
-                img.style.height = '100%';
-                img.style.top = '';
-                img.style.left = '';
-                img.style.zIndex = '';
             });
             
             console.log(`Grid cell ${index} updated with new logo`);
@@ -285,10 +261,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
-                        canvas.width = 20;
-                        canvas.height = 20;
-                        ctx.drawImage(img, 0, 0, 20, 20);
-                        const resizedImageData = canvas.toDataURL('image/jpeg');
+                        canvas.width = 60;  // 크기를 60x60으로 증가
+                        canvas.height = 60;
+                        ctx.drawImage(img, 0, 0, 60, 60);
+                        const resizedImageData = canvas.toDataURL('image/png', 1.0);  // PNG 형식 사용, 최대 품질
                         
                         updateGridCell(cell.dataset.index, resizedImageData); // 즉시 그리드 셀 업데이트
                         

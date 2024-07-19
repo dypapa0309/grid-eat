@@ -31,18 +31,15 @@ body {
 }
 
 #gridContainer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     width: 100%;
     max-width: 900px;
-    overflow-x: auto;  /* 추가: 가로 스크롤 허용 */
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 #grid {
     display: grid;
-    grid-template-columns: repeat(40, 20px);
-    grid-template-rows: repeat(25, 20px);
+    grid-template-columns: repeat(40, minmax(15px, 20px));
     gap: 2px;
     justify-content: center;
     align-items: center;
@@ -51,12 +48,14 @@ body {
     padding: 10px;
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(0,0,0,0.2);
-    min-width: min-content;  /* 추가: 그리드의 최소 너비 설정 */
+    min-width: min-content;
 }
 
 .grid-item {
-    width: 20px;
-    height: 20px;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    min-width: 15px;
+    min-height: 15px;
     background-color: #ecf0f1;
     border-radius: 3px;
     cursor: pointer;
@@ -80,10 +79,10 @@ body {
 .grid-item:hover img {
     transform: scale(1);
     position: absolute;
-    top: -200%;
-    left: -200%;
-    width: 500%;
-    height: 500%;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
     z-index: 3;
 }
 
@@ -188,13 +187,12 @@ body {
 
 @media (max-width: 768px) {
     #grid {
-        grid-template-columns: repeat(20, 15px);
-        grid-template-rows: repeat(50, 15px);
+        grid-template-columns: repeat(20, minmax(15px, 1fr));
     }
 
     .grid-item {
-        width: 15px;
-        height: 15px;
+        min-width: 15px;
+        min-height: 15px;
     }
 
     #gameArea {

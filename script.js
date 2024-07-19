@@ -19,9 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     createGrid(grid);
     initializeLogoListener();
+    adjustGridLayout(); // 초기 레이아웃 조정
 
     function createGrid(grid) {
-        for (let i = 0; i < 1000; i++) {
+        const totalCells = 1000; // 40x25 그리드 유지
+        for (let i = 0; i < totalCells; i++) {
             const cell = document.createElement('div');
             cell.className = 'grid-item';
             cell.dataset.index = i;
@@ -31,6 +33,24 @@ document.addEventListener('DOMContentLoaded', () => {
             grid.appendChild(cell);
         }
     }
+
+    // 그리드 크기에 따른 레이아웃 조정 함수 추가
+    function adjustGridLayout() {
+        const gridContainer = document.getElementById('gridContainer');
+        const grid = document.getElementById('grid');
+        const windowWidth = window.innerWidth;
+        if (windowWidth <= 768) { // 모바일 화면
+            grid.style.gridTemplateColumns = 'repeat(20, 1fr)';
+            gridContainer.style.overflowX = 'auto';
+        } else { // 데스크톱 화면
+            grid.style.gridTemplateColumns = 'repeat(40, 1fr)';
+            gridContainer.style.overflowX = 'hidden';
+        }
+    }
+
+    // 이벤트 리스너 추가
+    window.addEventListener('load', adjustGridLayout);
+    window.addEventListener('resize', adjustGridLayout);
 
     function initializeLogoListener() {
         const logosRef = database.ref('logos');
@@ -49,59 +69,59 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-function updateGridCell(index, logoData) {
-    const cell = document.querySelector(`.grid-item[data-index="${index}"]`);
-    if (cell && logoData) {
-        cell.innerHTML = ''; // 기존 내용 제거
-        const img = new Image();
-        img.src = logoData;
-        img.style.width = '100%';
-        img.style.height = '100%';
-        img.style.objectFit = 'cover';
-        cell.appendChild(img);
-        
-        // 터치 이벤트 리스너 추가
-        let touchStartTime;
-        cell.addEventListener('touchstart', (e) => {
-            touchStartTime = new Date().getTime();
-        });
-        
-        cell.addEventListener('touchend', (e) => {
-            const touchEndTime = new Date().getTime();
-            const touchDuration = touchEndTime - touchStartTime;
-            
-            if (touchDuration > 500) { // 0.5초 이상 터치했을 때
-                e.preventDefault();
-                showExpandedImage(logoData);
-            }
-        });
-        
-        // 마우스 이벤트 리스너 추가
-        cell.addEventListener('mouseenter', () => {
-            cell.style.zIndex = '2';
-            img.style.position = 'absolute';
-            img.style.width = '500%';
-            img.style.height = '500%';
-            img.style.top = '-200%';
-            img.style.left = '-200%';
-            img.style.zIndex = '3';
-        });
-        
-        cell.addEventListener('mouseleave', () => {
-            cell.style.zIndex = '1';
-            img.style.position = '';
+    function updateGridCell(index, logoData) {
+        const cell = document.querySelector(`.grid-item[data-index="${index}"]`);
+        if (cell && logoData) {
+            cell.innerHTML = ''; // 기존 내용 제거
+            const img = new Image();
+            img.src = logoData;
             img.style.width = '100%';
             img.style.height = '100%';
-            img.style.top = '';
-            img.style.left = '';
-            img.style.zIndex = '';
-        });
-        
-        console.log(`Grid cell ${index} updated with new logo`);
-    } else {
-        console.log(`Failed to update grid cell ${index}. Cell: ${cell}, Logo data: ${logoData ? 'exists' : 'missing'}`);
+            img.style.objectFit = 'cover';
+            cell.appendChild(img);
+            
+            // 터치 이벤트 리스너 추가
+            let touchStartTime;
+            cell.addEventListener('touchstart', (e) => {
+                touchStartTime = new Date().getTime();
+            });
+            
+            cell.addEventListener('touchend', (e) => {
+                const touchEndTime = new Date().getTime();
+                const touchDuration = touchEndTime - touchStartTime;
+                
+                if (touchDuration > 500) { // 0.5초 이상 터치했을 때
+                    e.preventDefault();
+                    showExpandedImage(logoData);
+                }
+            });
+            
+            // 마우스 이벤트 리스너 추가
+            cell.addEventListener('mouseenter', () => {
+                cell.style.zIndex = '2';
+                img.style.position = 'absolute';
+                img.style.width = '500%';
+                img.style.height = '500%';
+                img.style.top = '-200%';
+                img.style.left = '-200%';
+                img.style.zIndex = '3';
+            });
+            
+            cell.addEventListener('mouseleave', () => {
+                cell.style.zIndex = '1';
+                img.style.position = '';
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.top = '';
+                img.style.left = '';
+                img.style.zIndex = '';
+            });
+            
+            console.log(`Grid cell ${index} updated with new logo`);
+        } else {
+            console.log(`Failed to update grid cell ${index}. Cell: ${cell}, Logo data: ${logoData ? 'exists' : 'missing'}`);
+        }
     }
-}
 
     function showExpandedImage(logoData) {
         const overlay = document.createElement('div');
